@@ -21,6 +21,15 @@ with open(fdata_txt, 'r') as f:
         print(list[9])
         print(list[12])
 
+zMax = zList[0]
+zIndexMax = 0
+index = 0
+for i in zList:
+    if i > zMax:
+        zMax = i
+        zIndexMax = index
+    index += 1
+print("Maximal value is", zMax, "at (", xList[zIndexMax], ",", yList[zIndexMax], ")")
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.scatter(xList, yList, zList, c='b', marker='o')
