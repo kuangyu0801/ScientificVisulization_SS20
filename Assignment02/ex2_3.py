@@ -23,9 +23,9 @@ for f in file:
     plt.scatter(x, y)
     ax = plt.axes()
     mean_x = mean[0]
-    title = f + ': mean(x,y)= (' + '{:.2f}'.format(mean[0]) + '{:.2f}'.format(mean[1]) +')' \
-            + ', var (x,y)=' + '{:.2f}'.format(var[0]) + '{:.2f}'.format(var[1]) +')' \
-            + ', correlation=' + '{:.2f}'.format(correlation[0])
+    title = f + ': mean(x,y)= ({:.1f}'.format(mean[0]) + ', {:.1f}'.format(mean[1]) +')' \
+            + ', var (x,y)= ({:.1f}'.format(var[0]) + ', {:.1f}'.format(var[1]) +')' \
+            + ', correlation= {:.0f}'.format(correlation[0])
     ax.set(xlabel='x', ylabel='y',title=title)
     plt.legend()
     plt.show()
