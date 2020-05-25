@@ -1,0 +1,63 @@
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <!--
+
+        Assignment sheet 4, excercise 5.
+
+        Calculate vector magnitude and spherical representation.
+
+        -->
+        <SourceProxy name="Exercise05" class="exercise_05" label="Vector Properties (Assignment 4.5)">
+            <Documentation>
+                Calculate vector magnitude and spherical representation.
+            </Documentation>
+
+            <InputProperty name="Grid" command="SetInputConnection" port_index="0">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkImageData"/>
+                </DataTypeDomain>
+                <InputArrayDomain attribute_type="point" name="velocity_array" number_of_components="3"/>
+                <Documentation>
+                    Regular grid storing velocity vectors.
+                </Documentation>
+            </InputProperty>
+
+            <!--   TODO
+                  Insert a drop-down menu that allows the selection of 
+                  the wanted visualization method and connect it with the variable "VectorProperty".
+                  For more information, have a look at https://www.paraview.org/Wiki/ParaView/Plugin_HowTo
+
+                  The mapping of values is as follows
+                  0 : velocity magnitude
+                  1 : x component
+                  2 : y component
+                  3 : z component
+                  4 : r component
+                  5 : theta component
+                  6 : phi component
+             -->
+            <IntVectorProperty name="VectorProperty" command="SetVectorProperty" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="velocity magnitude"/>         
+                    <Entry value="1" text="x component"/>
+                    <Entry value="2" text="y component"/>
+                    <Entry value="3" text="z component"/>
+                    <Entry value="4" text="r component"/>
+                    <Entry value="5" text="theta component"/>
+                    <Entry value="6" text="phi component"/>
+                </EnumerationDomain>
+                <Documentation>
+                    This property indicates which VectorProperty will be used.
+                </Documentation>
+             </IntVectorProperty>
+
+            <Hints>
+                <ShowInMenu category="SciVis"/>
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
