@@ -52,7 +52,8 @@ RUN apt-get install -y pkg-config autoconf libssl-dev libvncserver-dev libxtst-d
     ./configure && \
     make && make install && \
     rm -rf /root/x11vnc-src && \
-    echo "screen -wipe > /dev/null && if [ $(screen -ls | grep vnc | wc -l) == 0 ]; then screen -dmS vnc /root/.start_vnc.sh; fi" >> /root/.bashrc
+    echo "screen -wipe > /dev/null" >> /root/.bashrc && \
+    echo "if [ \$(screen -ls | grep vnc | wc -l) == 0 ]; then screen -dmS vnc /root/.start_vnc.sh; fi" >> /root/.bashrc
 
 # get and configure assignment code
 ENV CMAKE_PREFIX_PATH /root/paraview/lib/cmake/paraview-5.8
