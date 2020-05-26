@@ -29,7 +29,7 @@ void exercise_04::SimpleExecute(vtkImageData* input, vtkImageData* output)
 	int ymin = inExt[2];
 	int ymax = inExt[3];
 	int zmin = inExt[4];
-	int zmax = inExt[5]
+	int zmax = inExt[5];
 
 	// get x, y, z dimensions
 	int *dims = input->GetDimensions();
@@ -70,7 +70,7 @@ void exercise_04::SimpleExecute(vtkImageData* input, vtkImageData* output)
             for (vtkIdType i = (xmin + 1); i < xmax; i += 1) {
 
                 // i +/- 1, j +/- dims[0], k +/i dims[0]*dims[1]
-                int diff[3] = {1, dims[0], sliceSize}
+                int diff[3] = {1, dims[0], sliceSize};
                 int index = (i - xmin) + jOffset + kOffset;
                 // getting f(i-1, j, k), f(i+1, j, k)
                 for (int comIndex = 0; comIndex < 3; comIndex += 1) {
