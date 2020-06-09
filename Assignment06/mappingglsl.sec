@@ -45,8 +45,12 @@ vec3 mapToColor(float val)
 	float val_limit = clamp(val, 0.0, 1.0);
 
     int point_index = int(floor(val_limit * 7.0));
-    float weight = (val_limit * 7.0) - float(point_index);
-    color = (1.0 - weight) * VIRIDIS_8_RGB[point_index] + weight * VIRIDIS_8_RGB[point_index + 1];
+    if (point_index == 7) {
+    	color = VIRIDIS_8_RGB[7];
+    } else {
+    	float weight = (val_limit * 7.0) - float(point_index);
+    	color = (1.0 - weight) * VIRIDIS_8_RGB[point_index] + weight * VIRIDIS_8_RGB[point_index + 1];
+    }
     return color;
 }
 
