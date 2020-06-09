@@ -31,7 +31,7 @@ const vec3[] VIRIDIS_8_RGB = vec3[](
 
 vec3 mapToColor(float val)
 {
-    vec3 color = vec3(0.0);
+    vec3 color = vec3(0.0); // initializes each component of the vec3 with the float
 
     // TODO - Task 1 (2P):
     // Map the scalar 'val' to an RGB color using the provided 'VIRIDIS_8_RGB'
@@ -42,8 +42,12 @@ vec3 mapToColor(float val)
     // Hint: Use built-in GLSL functions (see
     // https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf)
     //
+	float val_limit = clamp(val, 0.0, 1.0);
 
-    return color;    
+    int point_index = int(floor(val_limit * 7.0));
+    float weight = (val_limit * 7.0) - float(point_index);
+    color = (1.0 - weight) * VIRIDIS_8_RGB[point_index] + weight * VIRIDIS_8_RGB[point_index + 1];
+    return color;
 }
 
 // TODO - Task 2 (2P):
