@@ -99,6 +99,10 @@ float mapToHeight(float val)
     // https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf)
     //
 
+    float val_limit = clamp(val, 0.0, 1.0);
+    
+    height = 0.333 * log2(7.0*val_limit + 1.0) - 0.5;
+    
     return height;
 }
 
