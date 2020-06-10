@@ -78,7 +78,13 @@ vec3 mapToColor(float val)
 // https://www.learnopengl.com/Getting-started/Textures and 
 // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexParameter.xhtml).
 //
-// ...
+// If the difference of resolution between the data and the grid is small, then we can 
+// get a good sampling result without texture minification and magnification.
+// When the resolution of the data is larger than the resolution of the visualization  
+// grid, texture minification can reduce the production of aliasing artifacts and the 
+// waste of bandwidth. On the other hand, when the resolution of the data is smaller 
+// than the resolution of the visualization grid, texture magnification can fill the
+// gap.
 
 float mapToHeight(float val)
 {
