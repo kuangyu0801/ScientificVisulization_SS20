@@ -106,8 +106,9 @@ float mapToHeight(float val)
     //
 
     float val_limit = clamp(val, 0.0, 1.0);
-    
-    height = 0.333 * log2(7.0*val_limit + 1.0) - 0.5;
+    float weight = float(1) / float(3);
+
+    height = weight * log2(7.0*val_limit + 1.0) - 0.5;
     
     return height;
 }
