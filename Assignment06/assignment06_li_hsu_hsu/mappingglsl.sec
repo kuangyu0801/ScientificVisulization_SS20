@@ -1,0 +1,202 @@
+// Scientific Visualization - Assignment 06
+//
+// Code sections to be edited are marked with 'TODO' comments. Please submit 
+// your complete modified file. Make sure that your code can be executed on 
+// www.shadertoy.com and compiles without errors.
+// 
+
+// 	Select mode:
+//	
+//   0:  map to color and draw as 2D image
+//   1:  map to color and position and draw as 3D surface
+//
+#define MODE 0
+
+//-----------------------------------------------------------------------------
+//  Tasks
+//-----------------------------------------------------------------------------
+// Viridis color map with 8 entries (red, green, blue).
+// Source: http://www.kennethmoreland.com/color-advice/
+//
+const vec3[] VIRIDIS_8_RGB = vec3[](
+    vec3(0.2823645529290169, 0.0, 0.3310101940118055),
+    vec3(0.31093764455559003, 0.1867198329507134, 0.499013125962462),
+    vec3(0.2633950954372358, 0.3549021741820773, 0.5528267289276363),
+    vec3(0.20303365450234195, 0.49729398741766556, 0.5578110963268489),
+    vec3(0.13182686795279983, 0.6340509511445657, 0.5291665063764508),
+    vec3(0.24090172204161298, 0.7633448774061599, 0.42216355577803744),
+    vec3(0.5758187113512072, 0.8600490306624121, 0.2073384027250591),
+    vec3(0.9529994532916154, 0.9125452328290099, 0.11085876909361342)
+);
+
+vec3 mapToColor(float val)
+{
+    vec3 color = vec3(0.0); // initializes each component of the vec3 with the float
+
+    // DONE - Task 1 (2P):
+    // Map the scalar 'val' to an RGB color using the provided 'VIRIDIS_8_RGB'
+    // color map. Limit the input value range to the interval [0, 1]. Use
+    // linear interpolation to calculate the color between the given points 
+    // of the color map.
+    //
+    // Hint: Use built-in GLSL functions (see
+    // https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf)
+    //
+	float val_limit = clamp(val, 0.0, 1.0);
+
+    int point_index = int(floor(val_limit * 7.0));
+    float weight = (val_limit * 7.0) - float(point_index);
+
+    if (point_index == 7) {
+    	color = VIRIDIS_8_RGB[7];
+    } else if (point_index == 6) {
+        color = (1.0 - weight) * VIRIDIS_8_RGB[6] + weight * VIRIDIS_8_RGB[7];
+    } else if (point_index == 5) {
+    	color = (1.0 - weight) * VIRIDIS_8_RGB[5] + weight * VIRIDIS_8_RGB[6];
+    } else if (point_index == 4) {
+    	color = (1.0 - weight) * VIRIDIS_8_RGB[4] + weight * VIRIDIS_8_RGB[5];
+    } else if (point_index == 3) {
+    	color = (1.0 - weight) * VIRIDIS_8_RGB[3] + weight * VIRIDIS_8_RGB[4];
+    } else if (point_index == 2) {
+        color = (1.0 - weight) * VIRIDIS_8_RGB[2] + weight * VIRIDIS_8_RGB[3];
+    } else if (point_index == 1) {
+        color = (1.0 - weight) * VIRIDIS_8_RGB[1] + weight * VIRIDIS_8_RGB[2];
+    } else if (point_index == 0) {
+        color = (1.0 - weight) * VIRIDIS_8_RGB[0] + weight * VIRIDIS_8_RGB[1];
+    }
+
+    return color;
+}
+
+// TODO - Task 2 (2P):
+// For this task we transfer the data to be visualized as texture to the
+// graphics hardware and access it using pixel coordinates. The resolution of 
+// the data and the resolution of the visualization grid usually differ. 
+// Discuss (in max. 5 sentences) the effects of sampling the data onto a new
+// grid and how different settings for texture minification and magnification
+//  affect the visualization (see 
+// https://www.learnopengl.com/Getting-started/Textures and 
+// https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexParameter.xhtml).
+//
+// If the difference of resolution between the data and the grid is small, then we can 
+// get a good sampling result without texture minification and magnification.
+// When the resolution of the data is larger than the resolution of the visualization  
+// grid, texture minification can reduce the production of aliasing artifacts and the 
+// waste of bandwidth. On the other hand, when the resolution of the data is smaller 
+// than the resolution of the visualization grid, texture magnification can fill the
+// gap.
+
+float mapToHeight(float val)
+{
+    float height = 0.0;
+
+    // TODO - Task 3 (1P):
+    // Map the scalar 'val' to the elevation of a 3D surface by implementing 
+    // the following function:
+    //
+    //      f(x) = (1/3) * log2(7x + 1) - 0.5
+    //
+    // Limit the input value range to the interval [0, 1].
+    //
+    // Hints:
+    // - you can view the surface by setting 'MODE' to 1 (at the beginning of
+    // the file).
+    // - use built-in GLSL functions (see
+    // https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf)
+    //
+
+    float val_limit = clamp(val, 0.0, 1.0);
+    float weight = float(1) / float(3);
+
+    height = weight * log2(7.0*val_limit + 1.0) - 0.5;
+    
+    return height;
+}
+
+//-----------------------------------------------------------------------------
+//  Rendering Subroutines
+//-----------------------------------------------------------------------------
+vec3 renderImage(vec2 fragCoord)
+{   
+    // Normalized pixel coordinates
+    vec2 uv = fragCoord / iResolution.xy;
+
+    // Input value for this fragment
+    float val = texture(iChannel0, uv).r;
+
+    return mapToColor(val);
+}
+
+// axes aligned bounding box intersection test with the slab method:
+// https://tavianator.com/fast-branchless-raybounding-box-intersections/
+bool intersectBoundingBox(
+    vec3 rayOrig, vec3 rayDir, out float tNear, out float tFar)
+{
+    vec3 invR = vec3(1.0) / rayDir;
+    vec3 tbot = invR * (vec3(-0.5) - rayOrig);
+    vec3 ttop = invR * (vec3(0.5) - rayOrig);
+    vec3 tmin = min(ttop, tbot), tmax = max(ttop, tbot);
+    
+    float largestTMin = max(max(tmin.x, tmin.y), max(tmin.x, tmin.z));
+    float smallestTMax = min(min(tmax.x, tmax.y), min(tmax.x, tmax.z));
+    
+    tNear = largestTMin;
+    tFar = smallestTMax;
+    
+    return (smallestTMax > largestTMin);
+}
+
+vec3 renderSurface(vec2 fragCoord)
+{
+    // camera setup
+    vec3 rayDir = vec3(0.0), rayOrig = vec3(0.0);
+    {
+        vec3 c = vec3(
+            max(0.0001, 1.0 - sin(iTime * 0.1)) * sin(iTime * 0.5), 
+            (1.0 + 0.4 * sin(iTime * 0.45)),
+            max(0.0001, 1.0 - sin(iTime * 0.1)) * cos(iTime * 0.5));
+        vec3 v = normalize(c);
+        vec3 r = normalize(cross(-v, vec3(0.0, 1.0, 0.0)));
+        vec3 u = normalize(cross(r, -v));
+        vec2 ip = vec2(
+            2.0 * fragCoord.x / iResolution.x - 1.0, 
+            (2.0 * fragCoord.y - iResolution.y) / iResolution.x);
+        rayDir = normalize(ip.x * r + ip.y * u - 10.0 * v);
+        rayOrig = c + ip.x * r + ip.y * u;
+    }
+    
+    // draw the surface
+    vec3 color = vec3(1.0);
+    float tNear = 1.0, tFar = 0.0; if (intersectBoundingBox(rayOrig, rayDir, tNear, tFar)) { float lastVal = 0.0;
+        for (float x = tNear; x <= tFar; x += 0.005)
+        {
+            vec3 pos = rayOrig + x * rayDir;
+            vec2 uv = vec2(1.0, -1.0) * pos.xz + vec2(0.5);
+            float val = pos.y > mapToHeight(texture(iChannel0, uv).r) ? 
+                    1.0 : -1.0;
+            if ((val * lastVal) < 0.0)
+            {
+                color = mapToColor(texture(iChannel0, uv).r);
+                break;
+            }
+            lastVal = val;
+        }
+    }
+    return color;
+}
+
+//-----------------------------------------------------------------------------
+//  Shader Entry Point
+//-----------------------------------------------------------------------------
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+    // Apply the mappings and compute the fragment
+#if (MODE != 1)
+    vec3 fragmentResult = renderImage(fragCoord);
+#else
+    vec3 fragmentResult = renderSurface(fragCoord);
+#endif
+
+    // Output to screen
+    fragColor = vec4(fragmentResult, 1.0);
+}
