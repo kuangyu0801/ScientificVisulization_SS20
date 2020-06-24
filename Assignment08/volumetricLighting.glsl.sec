@@ -190,6 +190,16 @@ vec3 gradientIntermediate(vec3 pos)
 {
     vec3 result;
 	//TODO: Insert codes here
+    float xMinus = (pos.x == bbMin.x) ? bbMin.x : pos.x - voxelWidth;
+    float yMinus = (pos.y == bbMin.y) ? bbMin.y : pos.y - voxelWidth;
+    float zMinus = (pos.z == bbMin.z) ? bbMin.z : pos.z - voxelWidth;
+    vec3 posXminus = vec3(xMinus, pos.y, pos.z);
+    vec3 posYminus = vec3(pos.x, yMinus, pos.z);
+    vec3 posZminus = vec3(pos.x, pos.y, zMinus);
+    float gradientX = sampleVolume(pos) - sampleVolume(posXminus);
+    float gradientY = sampleVolume(pos) - sampleVolume(posYminus);
+    float gradientZ = sampleVolume(pos) - sampleVolume(posZminus);
+    result = vec3(gradientX, gradientY, gradientZ);
     return result;
 }
 
