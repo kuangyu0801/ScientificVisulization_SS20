@@ -219,9 +219,10 @@ vec4 lighting(vec4 objColor, vec3 normal, vec3 eyeDir)
     vec3 halfwayDir = normalize(-lightDir + eyeDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), exponent);
     float diff = max(dot(normal, -lightDir), 0.0);
-    vec4 specColor = objColor * spec;
-    vec4 diffColor = objColor * diff;
-    color.rgb = ka * objColor.rgb + kd * diffColor.rgb + ks * specColor.rgb;
+    vec4 specColor = ks * lightColor * spec;
+    vec4 diffColor = kd * objColor * diff;
+    vec4 ambiColor = ka * objColor;
+    color = ambiColor + diffColor +  specColor;
     return color;
 }
 
