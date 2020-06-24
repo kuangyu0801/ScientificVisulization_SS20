@@ -176,7 +176,7 @@ vec3 gradientCentral(vec3 pos)
     float gradientX = sampleVolume(posXplus) - sampleVolume(posXminus);
     float gradientY = sampleVolume(posYplus) - sampleVolume(posYminus);
     float gradientZ = sampleVolume(posZplus) - sampleVolume(posZminus);
-    result = vec3(gradientX, gradientY, gradientZ);
+    result = normalize(vec3(gradientX, gradientY, gradientZ));
     return result;
 }
 
@@ -199,7 +199,7 @@ vec3 gradientIntermediate(vec3 pos)
     float gradientX = sampleVolume(pos) - sampleVolume(posXminus);
     float gradientY = sampleVolume(pos) - sampleVolume(posYminus);
     float gradientZ = sampleVolume(pos) - sampleVolume(posZminus);
-    result = vec3(gradientX, gradientY, gradientZ);
+    result = normalize(vec3(gradientX, gradientY, gradientZ));
     return result;
 }
 
@@ -216,6 +216,10 @@ vec4 lighting(vec4 objColor, vec3 normal, vec3 eyeDir)
 {
     // TODO Insert code here
     vec4 color = objColor;
+    vec3 halfwayDir = normalize(-lightDir + eyeDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), exponent);
+    vec4 specColor = lightColor * spec;
+    color = objColor + specColor;
     return color;
 }
 
