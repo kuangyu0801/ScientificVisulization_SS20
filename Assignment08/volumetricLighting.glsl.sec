@@ -161,6 +161,22 @@ vec3 gradientCentral(vec3 pos)
 {
     vec3 result;
 	//TODO: Insert codes here
+    float xPlus = (pos.x == bbMax.x) ? bbMax.x : pos.x + voxelWidth;
+    float xMinus = (pos.x == bbMin.x) ? bbMin.x : pos.x - voxelWidth;
+    float yPlus = (pos.y == bbMax.y) ? bbMax.y : pos.y + voxelWidth;
+    float yMinus = (pos.y == bbMin.y) ? bbMin.y : pos.y - voxelWidth;
+    float zPlus = (pos.z == bbMax.z) ? bbMax.z : pos.z + voxelWidth;
+    float zMinus = (pos.z == bbMin.z) ? bbMin.z : pos.z - voxelWidth;
+    vec3 posXplus = vec3(xPlus, pos.y, pox.z);
+    vec3 posXminus = vec3(xMinus, pos.y, pox.z);
+    vec3 posYplus = vec3(pos.x, yPlus, pox.z);
+    vec3 posYminus = vec3(pos.x, yMinus, pox.z);
+    vec3 posZplus = vec3(pos.x, pos.y, zPlus);
+    vec3 posZminus = vec3(pos.x, pos.y, zMinus);
+    float gradientX = sampleVolume(posXplus) - sampleVolume(posXminus);
+    float gradientY = sampleVolume(posYplus) - sampleVolume(posYminus);
+    float gradientZ = sampleVolume(posZplus) - sampleVolume(posZminus);
+    result = vec3(gradientX, gradientY, gradientZ);
     return result;
 }
 
