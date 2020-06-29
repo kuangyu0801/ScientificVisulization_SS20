@@ -1,0 +1,500 @@
+/*  Select mode:
+*
+*   0:  ray generation test
+*   1:  line integration
+*   2:  maximum intensity projection
+*   3:  isosurface (with Blinn-Phong shading)
+*   4:  classification */
+#define MODE 0
+
+//-----------------------------------------------------------------------------
+// utility defines
+//-----------------------------------------------------------------------------
+#define PIH     1.570796
+#define PI      3.141592
+#define PI2     6.283185
+#define SQRT2H  0.707106
+
+#define EPS 0.000001
+
+//-----------------------------------------------------------------------------
+// global settings/ parameters
+//-----------------------------------------------------------------------------
+#define ISO_VALUE 0.5
+#define SHADOW_THRESHOLD (1.01 * ISO_VALUE)
+
+// bounding box of volume data
+const vec3 bbMin = vec3(-0.5, -0.5, -0.5);
+const vec3 bbMax = vec3(0.5, 0.5, 0.5);
+
+// camera parameters
+const float fovx = 30.0;                 // horizontal field of view (in degree)
+const vec3 camPos = vec3(0.0, 1.5, 1.5); // camera position (world coordinates)
+const vec3 camFix = vec3(0.0, 0.0, 0.0); // camera fixation / look at point (world coordinates)
+const bool camRot = true;                // rotate camera around vertical axis through fixation
+
+// lighting / shading
+const vec3 lightDir = normalize(vec3(1.5, 1.0, -1.0));  // direction of (distant) light source;
+                                                        // points towards the source (world
+                                                        // coordinates)
+const vec3 ambient = vec3(0.2);         // color of ambient light contribution
+const vec3 diffuse = vec3(1.0);         // color of diffuse light contribution
+const vec3 specular = vec3(1.0);        // color of specular light contribution
+const float ka = 0.2;                   // ambient contribution
+const float kd = 0.3;                   // diffuse contribution
+const float ks = 0.5;                   // specular contribution
+const float exponent = 10.0;            // specular exponent (shininess)
+
+// step width for integration along ray
+const float dx = 0.005;
+
+// step width for gradient
+const float h = 0.0003;
+
+//-----------------------------------------------------------------------------
+// function declarations
+//-----------------------------------------------------------------------------
+bool earlyRayTermination(vec4 color);
+vec4 lineIntegration(float value);
+vec4 maximumIntensityProjection(float value);
+vec4 classification(float value);
+vec3 gradientCentral(vec3 pos);
+void frontToBack(inout vec4 acc, vec4 c);
+vec3 blinnPhong(vec3 normal, vec3 lightDir, vec3 eyeDir);
+vec4 testRay(vec3 rayOrig, vec3 rayDir);
+float sampleVolumeData(vec3 coord);
+bool intersectBoundingBox(
+    vec3 rayOrig, vec3 rayDir, out float tNear, out float tFar);
+float adjustAlphaStepsize(float alpha, float h);
+
+//-----------------------------------------------------------------------------
+// function definitions
+//-----------------------------------------------------------------------------
+/*!
+*   \brief
+*   Checks (for line integration, isosurface and classification modes) if the
+*   ray marching can be terminated early.
+*
+*   \param  color   RGBA color that has been accumulated on the ray so far
+*
+*   \return
+*   True if the accumulated color is (nearly) opaque and the ray marching
+*   can be terminated, otherwise false.
+*/
+bool earlyRayTermination(vec4 color)
+{
+    bool terminate = false;
+
+#if ((MODE == 1) || (MODE == 3) || (MODE == 4))
+    // TODO - Task 2 (1P):
+    // Check if the accumulated color is nearly opaque and possibly
+    // terminate the integration early.
+    //
+    // ...
+#endif
+
+    return terminate;
+}
+/*!
+*   \brief
+*   Function for use in line integration. Maps a sample value to RGBA.
+*
+*   \param  value   sampled value
+*
+*   \return
+*   RGBA color to which the sampled value was mapped.
+*/
+vec4 lineIntegration(float value)
+{
+    vec4 color = vec4(0.0);
+
+    // TODO - Task 3 (1P):
+    // Implement a transfer function that can be used in line integration
+    // compositing mode. In this mode, the values along a ray shall be summed
+    // up as opacity of an arbitrary color. Note that it might be necessary to
+    // scale the values by a constant factor to obtain a visible X-ray like
+    // image. Attach a screenshot of the rendering result.
+    //
+    // ...
+
+    return color;
+}
+
+/*!
+*   \brief
+*   Function for use in maximum intensity projection. Maps a sample value
+*   to RGBA.
+*
+*   \param  value   sampled value
+*
+*   \return
+*   RGBA color to which the sampled value was mapped.
+*/
+vec4 maximumIntensityProjection(float value)
+{
+    vec4 color = vec4(0.0);
+
+    // TODO - Task 5 (1P):
+    // Implement a transfer function that can be used in maximum intensity
+    // projection (MIP) mode. In this mode, the highest value encountered
+    // along a ray shall be mapped linearly to a fully opaque color. Attach
+    // a screenshot of the rendering result.
+    //
+    // ...
+
+    return color;
+}
+
+/*!
+*   \brief
+*   Function for use in classification. Maps a sample value
+*   to RGBA.
+*
+*   \param  value   sampled value
+*
+*   \return
+*   RGBA color to which the sampled value was mapped.
+*/
+vec4 classification(float value)
+{
+    vec4 color = vec4(0.0);
+
+    // TODO - Task 9 (1P):
+    // The synthetic volume data set contains a small string at the center.
+    // Design and implement a transfer function that can be used in
+    // classification mode. The function should highlight the string while
+    // masking out the rest of the volume. Attach a screenshot of the
+    // rendering result and write down the found string in the comment below.
+    //
+    // found string: ...
+    //
+    // ...
+
+    return color;
+}
+
+/*!
+*   \brief
+*   Computes the gradient at a given position using central differences.
+*
+*   \param  pos     position at which the gradient should be determined
+*
+*   \return
+*   Gradient vector at the given position.
+*/
+vec3 gradientCentral(vec3 pos)
+{
+    vec3 grad = vec3(0.0);      // gradient vector
+
+    // transform the position into volume coordinates.
+    pos = pos - bbMin;
+
+    grad.x = sampleVolumeData(pos + vec3(h, 0.0, 0.0)) - sampleVolumeData(pos - vec3(h, 0.0, 0.0));
+    grad.y = sampleVolumeData(pos + vec3(0.0, h, 0.0)) - sampleVolumeData(pos - vec3(0.0, h, 0.0));
+    grad.z = sampleVolumeData(pos + vec3(0.0, 0.0, h)) - sampleVolumeData(pos - vec3(0.0, 0.0, h));
+
+    return normalize(grad);
+}
+/*!
+ *  \brief
+ *  Composites RGBA color in a front-to-back manner.
+ *
+ *  \param acc[inout]   accumulated RGBA color
+ *  \param c            RGBA color of the blended element
+ *
+ *  \return
+ *  Nothing, Color is accumulated in inout parameter 'acc'.
+ */
+void frontToBack(inout vec4 acc, vec4 c)
+{
+    acc.rgb += (1.0 - acc.a) * c.rgb * c.a;
+    acc.a += (1.0 - acc.a) * c.a;
+}
+
+/*!
+*   \brief
+*   Computes RGB color for shading with Blinn-Phong model.
+*
+*   \param  normal      directional vector perpendicular to the shaded surface
+*   \param  lightDir    directional vector pointing towards the light source
+*   \param  eyeDir      directional vector pointing towards the eye/camera
+*
+*   \return
+*   Shading result as RGB color vector.
+*/
+vec3 blinnPhong(vec3 normal, vec3 lightDir, vec3 eyeDir)
+{
+    vec3 color = vec3(0.0);     // accumulated RGB color of the fragment
+    vec3 h = vec3(0.0);         // halfway vector
+
+    h = normalize(eyeDir + lightDir);
+
+    color = ka * ambient;
+    color += kd * diffuse * max(0.0, dot(normal, lightDir));
+    color += ks * specular * ((exponent + 2.0) / PI2) *
+            pow(max(0.0, dot(h, normal)), exponent);
+
+    return color;
+}
+
+/*!
+*   \brief
+*   Intersects a ray with the bounding volume and produces a colored cube
+*   for checking and debugging the ray generation. The local coordinates
+*   withing the volume are mapped to
+*   RGB.
+*
+*   \param rayOrig  The origin of the ray
+*   \param rayDir   The direction of the ray
+*
+*   \return
+*   RGBA pixel color for the given ray.
+*/
+vec4 testRay(vec3 rayOrig, vec3 rayDir)
+{
+    float tNear, tFar;
+    vec3 localPos;
+
+    if(intersectBoundingBox(rayOrig, rayDir, tNear, tFar))
+    {
+        localPos = rayOrig + rayDir * tNear;
+        return vec4(localPos - bbMin, 1.0);
+    }
+    else
+        return vec4(vec3(0.0), 1.0);
+}
+
+/*!
+*   \brief
+*   Samples a synthetic volume data set.
+*
+*   \param  coord  local, normalized volume coordinates
+*
+*   \return
+*   Scalar value of the volume at the requested position.
+*/
+float sampleVolumeData(vec3 coord)
+{
+    float value = 0.0, c1 = 0.4, c2 = 0.1, c3 = 0.21, c4 = 0.2,
+        c5 = 0.04, c6 = 0.07,  c7 = 0.01, c8 = 0.008;
+    vec3 ac = vec3(0.0), cc = vec3(0.0);
+
+    if ((max(max(coord.x, coord.y), coord.z) > 1.0) ||
+        (min(min(coord.x, coord.y), coord.z) < 0.0))
+        return 0.0;
+    else {cc = coord - vec3(0.5); ac = abs(cc);}
+    value = min(min(
+        length(normalize(vec3(ac.x, 0.0, ac.z)) * c1 - ac),
+        length(normalize(vec3(ac.xy, 0.0)) * c1 - ac)),
+        length(normalize(vec3(0.0, ac.yz)) * c1 - ac));
+    if (value <= c2) return clamp((c2 - value) / c2, 0.2, 1.0);
+    else value = max(max(ac.x, ac.y), ac.z);
+    if (value > c3) return 0.2;
+    if (all(lessThanEqual(ac, vec3(1.5 * (c5 + c7), 0.5 * c6, 0.5 * c8)))) {
+        if ((ac.x < (0.5 * c5)) &&
+            (abs(dot(ac, normalize(vec3(-0.5*c6, 0.5*c5, 0.0)))) < (0.5 * c8)))
+            return 0.15;
+        if ((((0.5 * c5 + c7) < ac.x) && (ac.x < (1.5 * c5 + c7))) &&
+            ((cc.y > (0.5 * c6 - c8)) ||
+                (abs(ac.x - (1.0 * c5 + c7)) < (0.5 * c8))))
+            return 0.15; }
+    else value = clamp(abs(value - c3) / (c3 - c4), 0.2, 1.0);
+
+    return value;
+}
+
+/*!
+*   \brief
+*   Intersection test with a ray and an axes aligned bounding box (slab method).
+*   See: https://tavianator.com/fast-branchless-raybounding-box-intersections/
+*
+*   \param rayOrig      origin of the ray
+*   \param rayDir       direction of the ray
+*   \param tNear[out]   distance from ray origin to first intersection point
+*   \param tFar[out]    distance from ray origin to second intersection point
+*
+*   \return
+*   True if the ray intersects the bounding box, false otherwise.
+*/
+bool intersectBoundingBox(vec3 rayOrig, vec3 rayDir, out float tNear, out float tFar)
+{
+    vec3 invR = vec3(1.0) / rayDir;
+    vec3 tbot = invR * (bbMin - rayOrig);
+    vec3 ttop = invR * (bbMax - rayOrig);
+
+    vec3 tmin = min(ttop, tbot);
+    vec3 tmax = max(ttop, tbot);
+
+    float largestTMin = max(max(tmin.x, tmin.y), max(tmin.x, tmin.z));
+    float smallestTMax = min(min(tmax.x, tmax.y), min(tmax.x, tmax.z));
+
+    tNear = largestTMin;
+    tFar = smallestTMax;
+
+    return (smallestTMax > largestTMin);
+}
+
+/*!
+*   \brief
+*   Main routine, computes the color for the given fragment.
+*
+*   \param fragColor[out]   color of the pixel/fragment
+*   \param fragCoord        coordinate of the fragment in screen space
+*/
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+    vec2 uv = fragCoord.xy / iResolution.xy;        //!< screen coordinates in [0,1]
+    float aspect = iResolution.x / iResolution.y;   //!< aspect ratio of the drawing window
+
+    /******************** compute camera parameters ********************/
+    float camSpeed = 0.5;   //!< angular velocity of camera rotation
+    vec3 camPos = camPos;   //!< position of the camera/ center of the image plane
+                            //!< in world coordinates
+    if (camRot == true)
+        camPos = vec3(camFix.x + length(camFix.xz - camPos.xz) * sin(iTime*camSpeed),
+                      camPos.y,
+                      camFix.z + length(camFix.xz - camPos.xz) * cos(iTime*camSpeed));
+
+    vec3 camDir = normalize(camFix - camPos);           //!< direction of camera principal axis
+    vec3 camUp = vec3(0.0, 1.0, 0.0);                   //!< vertical image plane axis
+    vec3 camRight = normalize(cross(camDir, camUp));    //!< horizontal image plane axis
+    camUp = normalize(cross(camRight, camDir));
+
+    /************ compute ray direction *******************************/
+    vec2 ipUV = vec2(0.0);  //!< local image plane coordinates
+
+    // Transform the 'uv' screen coordinates from interval [0,1] into local
+    // image plane coordinates from interval [-1,1] while considering the
+    // aspect ration of the drawing window.
+    ipUV = vec2(2.0 * uv.x - 1.0, (2.0 * uv.y - 1.0) / aspect);
+
+    // Calculate the distance between the (virtual) eye and the image plane
+    // considering horizontal field of view.
+    float ipDist = 1.0 / tan(0.5 * fovx / 180.0 * PI);
+
+    // Calculate the origin and the direction of the ray that is shot from the
+    // eye through the image plane into the scene. The eye is located behind
+    // the image plane in the opposite direction of the cameras principle axis.
+    vec3 rayDir = normalize(ipUV.x * camRight + ipUV.y * camUp + ipDist * camDir);
+    vec3 rayOrig = camPos + ipUV.x * camRight + ipUV.y * camUp;
+
+    /******************** main raycasting loop *******************/
+    float sampleValue = 0.0;        //!< data value of the volume at the current position
+
+    vec4 finalColor = vec4(0.0);    //!< color after blending/ compositing step
+    vec4 background = vec4(0.0, 0.0, 0.0, 1.0); //!< background color of the scene
+
+    vec3 pos = vec3(0.0);           //!< current position on the shot ray (world coordinates)
+    float tNear, tFar;              //!< near and far distances where the shot ray intersects the
+                                    //!< bounding box of the volume data
+    float x = 0.0;                  //!< distance from origin to current position on the shot ray
+
+    // maximum intensity projection
+    float maxValue = 0.0;           //!< temporary variable for storing the maximum value
+
+    // iso-surface
+    float sampleValueLast = 0.0;    //!< temporary variable for storing the last sample value
+    vec3 posLast = rayOrig;         //!< temporary variable for storing the last position on the ray (world coordinates)
+
+    // Blinn-Phong shading
+    vec3 p = vec3(0.0);             //!< position on the iso-surface (world coordinates)
+    vec3 n = vec3(0.0);             //!< surface normal pointing away from the surface
+    vec3 l = lightDir;              //!< direction of the distant light source (world coordinates)
+    vec3 e = -rayDir;               //!< direction of the (virtual) eye direction (world coordinates)
+
+    // shadows
+    bool shadow = false;            //!< indicator if current fragment is shadowed
+    float sampleValueShadow = 0.0;  //!< temporary variable for sampling the volume along the shadow ray
+    float tNearShadow, tFarShadow;  //!< near and far distance of shadow ray bounding box intersections
+    float xs = 0.0;                 //!< distance from point on the isosurface to current position on the shadow ray
+
+
+#if ((MODE < 1) || (MODE > 4))
+// ray generation test
+    finalColor = testRay(rayOrig, rayDir);
+#else
+    if (intersectBoundingBox(rayOrig, rayDir, tNear, tFar))
+    {
+        for (x = tNear; x <= tFar; x += dx)
+        {
+            // TODO - Task 1 (1P):
+            // Calculate the current position on the ray using the ray origin
+            // and direction calculated above (rayOrig, rayDir) and the
+            // iteration variable x. Store the result in the variable pos.
+            //
+            // ...
+
+            sampleValue = sampleVolumeData(pos - bbMin);
+
+            // check if we can terminate the ray marching
+            if (earlyRayTermination(finalColor)) break;
+# if MODE == 1
+// line integration
+            frontToBack(finalColor, lineIntegration(sampleValue));
+# elif MODE == 2
+// maximum intensity projection
+            // TODO - Task 4 (1P):
+            // Implement maximum intensity projection by storing the highest
+            // value encountered along a ray and mapping it to color using
+            // the function maximumIntensityProjection. Note that you also
+            // have to complete the function to obtain a visible image.
+            // You might use the temporary variable maxValue. Store the
+            // result in finalColor.
+            //
+            // ...
+
+# elif MODE == 3
+// isosurface with Blinn-Phong shading
+            // TODO - Task 6 (1P):
+            // Implement isosurface rendering by providing a suitable
+            // condition for executing the following code block. You might read
+            // the temporary variable sampleValueLast. The iso value
+            // is set in the define ISO_VALUE.
+            //
+            if(false)
+            {
+                p = mix(
+                        posLast,
+                        pos,
+                        (ISO_VALUE - sampleValueLast) /
+                            (sampleValue - sampleValueLast));
+                n = -gradientCentral(p);
+
+                finalColor = vec4(blinnPhong(n, l, e), 1.0);
+
+                // compute shadow
+                intersectBoundingBox(p, l, tNearShadow, tFarShadow);
+                for (xs = 0.0; xs < tFarShadow; xs += dx)
+                {
+                    // TODO - Task 7 (2P):
+                    // Add shadows to the rendered isosurface by sampling the
+                    // volume data set along a shadow ray and setting the
+                    // variable shadow to true if a value was encountered that
+                    // is greater than the value defined in SHADOW_THRESHOLD.
+                    // You might use the variable sampleValueShadow to store
+                    // sampled values. Note that you also have to complete the
+                    // if(shadow) code block below to obtain a visible result.
+                    //
+                    // ...
+                }
+                if(shadow)
+                {
+                    // TODO - Task 8 (1P):
+                    // Manipulate finalColor if the rendered fragment of the
+                    // isosurface is shadowed. Darken finalColor by a fixed
+                    // factor while retaining its alpha value.
+                    //
+                    // ...
+                }
+            }
+            sampleValueLast = sampleValue;
+            posLast = pos;
+# elif MODE == 4
+// classification
+            frontToBack(finalColor, classification(sampleValue));
+# endif
+        }
+    }
+#endif
+    fragColor = finalColor * finalColor.a + (1.0 - finalColor.a) * background;
+}
