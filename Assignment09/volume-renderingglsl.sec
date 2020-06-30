@@ -1,4 +1,3 @@
-
 /*  Select mode:
 *
 *   0:  ray generation test
@@ -6,7 +5,7 @@
 *   2:  maximum intensity projection
 *   3:  isosurface (with Blinn-Phong shading)
 *   4:  classification */
-#define MODE 2
+#define MODE 3
 
 //-----------------------------------------------------------------------------
 // utility defines
@@ -460,7 +459,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
             // the temporary variable sampleValueLast. The iso value
             // is set in the define ISO_VALUE.
             //
-            if(false)
+            if(sampleValueLast > ISO_VALUE)
             {
                 p = mix(
                         posLast,
@@ -485,6 +484,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
                     // if(shadow) code block below to obtain a visible result.
                     //
                     // ...
+                    vec3 h = -normalize(e + l);
+                    if(sampleVolumeData(p + h * xs) > SHADOW_THRESHOLD) shadow = true;                   
                 }
                 if(shadow)
                 {
@@ -494,6 +495,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
                     // factor while retaining its alpha value.
                     //
                     // ...
+                    finalColor = vec4(0.0, 0.0, 0.0, 1.0);
                 }
             }
             sampleValueLast = sampleValue;
