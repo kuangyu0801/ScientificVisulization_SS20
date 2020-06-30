@@ -484,8 +484,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
                     // if(shadow) code block below to obtain a visible result.
                     //
                     // ...
-                    vec3 h = -normalize(e + l);
-                    if(sampleVolumeData(p + h * xs) > SHADOW_THRESHOLD) shadow = true;                   
+                    sampleValueShadow = sampleVolumeData(posLast + lightDir * xs);
+                    if(sampleValueShadow > SHADOW_THRESHOLD) shadow = true;                   
                 }
                 if(shadow)
                 {
