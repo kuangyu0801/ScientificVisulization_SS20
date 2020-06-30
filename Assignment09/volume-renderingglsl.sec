@@ -1,3 +1,4 @@
+
 /*  Select mode:
 *
 *   0:  ray generation test
@@ -5,7 +6,7 @@
 *   2:  maximum intensity projection
 *   3:  isosurface (with Blinn-Phong shading)
 *   4:  classification */
-#define MODE 0
+#define MODE 2
 
 //-----------------------------------------------------------------------------
 // utility defines
@@ -91,6 +92,8 @@ bool earlyRayTermination(vec4 color)
     // terminate the integration early.
     //
     // ...
+    if(color.a + EPS >= 1.0) terminate = true;
+    
 #endif
 
     return terminate;
@@ -106,7 +109,7 @@ bool earlyRayTermination(vec4 color)
 */
 vec4 lineIntegration(float value)
 {
-    vec4 color = vec4(0.0);
+    vec4 color = vec4(value*1.8,value*1.8,value*1.8,value*0.087);
 
     // TODO - Task 3 (1P):
     // Implement a transfer function that can be used in line integration
@@ -116,7 +119,9 @@ vec4 lineIntegration(float value)
     // image. Attach a screenshot of the rendering result.
     //
     // ...
-
+	
+    
+    
     return color;
 }
 
@@ -132,7 +137,7 @@ vec4 lineIntegration(float value)
 */
 vec4 maximumIntensityProjection(float value)
 {
-    vec4 color = vec4(0.0);
+    vec4 color = vec4(value*3.0,value*3.0,value*3.0,value*0.5);;
 
     // TODO - Task 5 (1P):
     // Implement a transfer function that can be used in maximum intensity
@@ -423,6 +428,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
             // iteration variable x. Store the result in the variable pos.
             //
             // ...
+            pos = rayOrig + rayDir * x;
 
             sampleValue = sampleVolumeData(pos - bbMin);
 
@@ -442,6 +448,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
             // result in finalColor.
             //
             // ...
+
+            if (maxValue < sampleValue) maxValue = sampleValue;
+            finalColor = maximumIntensityProjection(maxValue);
 
 # elif MODE == 3
 // isosurface with Blinn-Phong shading
