@@ -161,22 +161,23 @@ vec3 gradientCentral(vec3 pos)
 {
     vec3 result;
 	//TODO: Insert codes here
-    float xPlus = (pos.x == bbMax.x) ? bbMax.x : pos.x + bbSize.x / float(sampleNum);
-    float xMinus = (pos.x == bbMin.x) ? bbMin.x : pos.x - bbSize.x / float(sampleNum);
-    float yPlus = (pos.y == bbMax.y) ? bbMax.y : pos.y + bbSize.y / float(sampleNum);
-    float yMinus = (pos.y == bbMin.y) ? bbMin.y : pos.y - bbSize.y / float(sampleNum);
-    float zPlus = (pos.z == bbMax.z) ? bbMax.z : pos.z + bbSize.z / float(sampleNum);
-    float zMinus = (pos.z == bbMin.z) ? bbMin.z : pos.z - bbSize.z / float(sampleNum);
+    float xPlus = (pos.x == bbMax.x) ? bbMax.x : pos.x + bbSize.x / float(64);
+    float xMinus = (pos.x == bbMin.x) ? bbMin.x : pos.x - bbSize.x / float(64);
+    float yPlus = (pos.y == bbMax.y) ? bbMax.y : pos.y + bbSize.y / float(64);
+    float yMinus = (pos.y == bbMin.y) ? bbMin.y : pos.y - bbSize.y / float(64);
+    float zPlus = (pos.z == bbMax.z) ? bbMax.z : pos.z + bbSize.z / float(64);
+    float zMinus = (pos.z == bbMin.z) ? bbMin.z : pos.z - bbSize.z / float(64);
     vec3 posXplus = vec3(xPlus, pos.y, pos.z);
     vec3 posXminus = vec3(xMinus, pos.y, pos.z);
     vec3 posYplus = vec3(pos.x, yPlus, pos.z);
     vec3 posYminus = vec3(pos.x, yMinus, pos.z);
     vec3 posZplus = vec3(pos.x, pos.y, zPlus);
     vec3 posZminus = vec3(pos.x, pos.y, zMinus);
-    float gradientX = sampleVolume(posXplus) - sampleVolume(posXminus);
-    float gradientY = sampleVolume(posYplus) - sampleVolume(posYminus);
-    float gradientZ = sampleVolume(posZplus) - sampleVolume(posZminus);
-    result = normalize(vec3(gradientX, gradientY, gradientZ));
+    float gradientX = (sampleVolume(posXplus) - sampleVolume(posXminus)) / (float(2) * bbSize.x / float(64));
+    float gradientY = (sampleVolume(posYplus) - sampleVolume(posYminus)) / (float(2)  * bbSize.y / float(64));
+    float gradientZ = (sampleVolume(posZplus) - sampleVolume(posZminus)) / (float(2)  * bbSize.z / float(64));
+
+    result = vec3(gradientX, gradientY, gradientZ);
     return result;
 }
 
@@ -214,15 +215,17 @@ vec3 gradientIntermediate(vec3 pos)
  */
 vec4 lighting(vec4 objColor, vec3 normal, vec3 eyeDir)
 {
-    // TODO Insert code here
+    //TODO: Insert code here
     vec4 color = objColor;
     vec3 halfwayDir = normalize(-lightDir + eyeDir);
+    vec3 l = -normalize(lightDir)
     float spec = pow(max(dot(normal, halfwayDir), 0.0), exponent);
-    float diff = max(dot(normal, -lightDir), 0.0);
-    vec4 specColor = ks * lightColor * spec;
-    vec4 diffColor = kd * objColor * diff;
-    vec4 ambiColor = ka * objColor;
-    color = ambiColor + diffColor +  specColor;
+    float diff = max(dot(normal, l), 0.0);
+    vec4 specColor = ks * lightColor * specularColor *  spec;
+    vec4 diffColor = kd * lightColor * objColor * diff;
+    vec4 ambiColor = ka * lightColor * objColor;
+    color = clamp(ambiColor + diffColor +  specColor, vec4(0), vec4(1));
+    color.a = objColor.a;
     return color;
 }
 
