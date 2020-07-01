@@ -170,7 +170,7 @@ vec4 classification(float value)
     // masking out the rest of the volume. Attach a screenshot of the
     // rendering result and write down the found string in the comment below.
     //
-    // found string: ...
+    // found string: TXT
     //
     // ...
     if (value > 0.0 && value <= 0.1 ) {
