@@ -173,6 +173,9 @@ vec4 classification(float value)
     // found string: ...
     //
     // ...
+    if (value > 0.0 && value <= 0.1 ) {
+        color = vec4(1);
+    } 
 
     return color;
 }
